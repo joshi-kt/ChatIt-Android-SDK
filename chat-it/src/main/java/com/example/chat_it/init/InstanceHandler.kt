@@ -4,6 +4,7 @@ import android.content.Context
 import com.example.chat_it.helper.ChatItHelper
 import com.example.chat_it.util.Logger
 import com.example.chat_it.util.SDKUninitializedException
+import com.example.chat_it.util.Utils
 
 object InstanceHandler {
 
@@ -22,18 +23,19 @@ object InstanceHandler {
     fun createInstance(
         context: Context,
         appKey: String,
-        localConfig: LocalConfig
+        localConfig: LocalConfig,
+        logConfig: LogConfig
     ) {
         synchronized(this) {
             if (_instance == null) {
-//                ChatItHelper.clearOlderFiles(
-//                    context,
-//                    onCleared = {
-//                        _instance = ChatItInstance(appKey, localConfig)
-//                        Logger.log(TAG,Logger.LogType.DEBUG,"Instance initialized : $_instance")
-//                    }
-//                )
-                _instance = ChatItInstance(appKey, localConfig)
+                Utils.setBuildType(context)
+                ChatItHelper.clearOlderFiles(
+                    context,
+                    onCleared = {
+                        _instance = ChatItInstance(appKey, localConfig, logConfig)
+                        Logger.log(TAG,Logger.LogType.DEBUG,"Instance initialized : $_instance")
+                    }
+                )
             } else {
                 Logger.log(TAG,Logger.LogType.DEBUG,"Instance already initialized")
             }

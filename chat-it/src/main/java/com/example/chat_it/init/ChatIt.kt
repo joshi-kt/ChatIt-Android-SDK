@@ -3,10 +3,11 @@ package com.example.chat_it.init
 import android.content.Context
 import com.example.chat_it.helper.ChatItHelper
 
-class ChatIt(
+class ChatIt @JvmOverloads constructor(
     val context : Context,
     val appKey : String,
-    val localConfig : LocalConfig = LocalConfig()
+    val localConfig : LocalConfig = LocalConfig(),
+    val logConfig: LogConfig = LogConfig()
 ) {
 
     fun initialize() {
@@ -19,7 +20,8 @@ class ChatIt(
             InstanceHandler.createInstance(
                 context = context.applicationContext,
                 appKey = appKey,
-                localConfig = localConfig
+                localConfig = localConfig,
+                logConfig = logConfig
             )
         }
     }

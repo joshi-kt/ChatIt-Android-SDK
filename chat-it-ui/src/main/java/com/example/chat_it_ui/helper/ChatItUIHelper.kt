@@ -8,6 +8,7 @@ import com.example.chat_it_ui.utils.Utils
 
 object ChatItUIHelper {
 
+    @JvmStatic
     fun startChat(context : Context) {
         if (Utils.isClassAvailable("com.example.chat_it.helper.ChatItHelper")) {
             val intent = Intent(context, ChatActivity::class.java)

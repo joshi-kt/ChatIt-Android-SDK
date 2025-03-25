@@ -15,3 +15,9 @@ data class LocalConfig(
     val botName : String = DEFAULT_BOT_NAME,
     val botAudioQueryPrompt : String = DEFAULT_AUDIO_MESSAGE_OUTPUT_INSTRUCTION,
 )
+
+@Serializable
+data class LogConfig(
+    val onDebugBuild : Boolean = true,
+    val onReleaseBuild : Boolean = false
+)

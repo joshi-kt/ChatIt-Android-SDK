@@ -13,6 +13,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
+import com.example.chat_it.util.Logger as ChatItLogger
 import kotlin.time.Duration
 
 internal object HttpClientFactory {
@@ -20,7 +21,7 @@ internal object HttpClientFactory {
     fun create(engine: HttpClientEngine): HttpClient {
         return HttpClient(engine) {
             install(Logging) {
-                level = LogLevel.ALL
+                level = if (ChatItLogger.isLogsEnabled()) LogLevel.ALL else LogLevel.NONE
                 logger = Logger.ANDROID
             }
             install(ContentNegotiation) {
