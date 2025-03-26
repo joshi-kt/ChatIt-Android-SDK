@@ -6,6 +6,7 @@ import android.net.Uri
 import android.provider.OpenableColumns
 import androidx.annotation.WorkerThread
 import com.example.chat_it.data.TaskExecutor
+import com.example.chat_it.init.InstanceHandler
 import com.example.chat_it.model.Message
 import com.example.chat_it.util.CLOSE_CHAT_IT_TASK
 import com.example.chat_it.util.Logger
@@ -82,7 +83,7 @@ internal object AudioMessageHelper {
                 stream.available()
             }
             numBytes?.let {
-                return numBytes <= MAX_FILE_SIZE
+                return numBytes <= InstanceHandler.instance.localConfig.maxFileUploadSize
             } ?: return false
 
         } ?: return false
