@@ -51,7 +51,7 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
     compileOnly(project(":chat-it"))
-//    compileOnly("io.github.joshi-kt:chatIt-core:x.x.x")
+//    compileOnly(libs.chatit.core)
     compileOnly(libs.kotlinx.serialization.json)
 
 }
