@@ -45,6 +45,7 @@ object ChatItHelper {
         }
     }
 
+    @JvmOverloads
     @JvmStatic
     fun sendAudioMessageAsync(
         audioUri : Uri,

@@ -10,7 +10,7 @@ const val BASE_URL = "https://generativelanguage.googleapis.com"
 const val UPLOAD = "/upload"
 const val API_VERSION = "/v1beta"
 const val GEMINI_MODEL = "/models/gemini-1.5-flash"
-const val MAX_FILE_SIZE = 15000000
+const val MAX_FILE_SIZE = 20_971_520
 
 const val SEND_MESSAGE_ENDPOINT = ":generateContent"
 const val CREATE_FILE_ENDPOINT = "/files"
