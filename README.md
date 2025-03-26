@@ -15,8 +15,6 @@ Looking for a seamless way to integrate a chatbot into your application? Look no
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.joshi-kt/chatIt-core.svg?label=Maven%20Central%20%7C%20chatIt-core)](https://search.maven.org/artifact/io.github.joshi-kt/chatIt-core)
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.joshi-kt/chatIt-ui.svg?label=Maven%20Central%20%7C%20chatIt-ui)](https://central.sonatype.com/artifact/io.github.joshi-kt/chatIt-ui/overview)
 
-## 
-
 ## Integration Steps : 
 
  ### 1. Add mavenCentral to the project
