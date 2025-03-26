@@ -8,7 +8,6 @@ import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import com.example.chat_it.helper.ChatItHelper
 import com.example.chat_it.init.ChatIt
 import com.example.chat_it.init.LocalConfig
 import kotlinx.coroutines.launch
@@ -22,7 +21,6 @@ class MainApplication : Application() {
             appKey = "",
             localConfig = LocalConfig(
                 botImage = R.drawable.img,
-                userImage = R.drawable.user,
             )
         ).initialize()
     }

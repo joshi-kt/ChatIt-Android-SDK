@@ -5,5 +5,6 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class ChatItInstance(
     val appKey : String,
-    val localConfig: LocalConfig
+    val localConfig: LocalConfig,
+    val logConfig: LogConfig
 )

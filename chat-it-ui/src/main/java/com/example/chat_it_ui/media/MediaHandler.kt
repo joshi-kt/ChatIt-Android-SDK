@@ -3,21 +3,22 @@ package com.example.chat_it_ui.media
 import android.media.MediaPlayer
 import com.example.chat_it_ui.ui.models.MessageUIModel
 
-object MediaHandler : MediaPlayer() {
+class MediaHandler {
 
+    private val mediaPlayer = MediaPlayer()
     private var currentPlayingMessage : MessageUIModel? = null
 
     private fun prepare(
         filePath : String,
         onReady : () -> Unit
     ) {
-        apply {
+        mediaPlayer.apply {
             setDataSource(filePath)
+            setOnPreparedListener {
+                onReady()
+            }
+            prepareAsync()
         }
-        setOnPreparedListener {
-            onReady()
-        }
-        prepareAsync()
     }
 
     fun play(
@@ -29,7 +30,7 @@ object MediaHandler : MediaPlayer() {
         try {
 
             if(isCurrentPlaying(messageUIModel)) {
-                start()
+                mediaPlayer.start()
                 onStarted()
                 return
             }
@@ -39,7 +40,7 @@ object MediaHandler : MediaPlayer() {
             prepare(
                 filePath = filePath,
                 onReady = {
-                    start()
+                    mediaPlayer.start()
                     updateCurrentPlaying(messageUIModel)
                     onStarted()
                 }
@@ -59,6 +60,20 @@ object MediaHandler : MediaPlayer() {
         return currentPlayingMessage?.messageId == messageUIModel.messageId
     }
 
+    fun isPlaying(): Boolean = runCatching { mediaPlayer.isPlaying }.onFailure{ it.printStackTrace() }.getOrDefault(false)
+
     fun currentQueuedAudio() : MessageUIModel? = currentPlayingMessage
+
+    fun onAudioComplete(block: () -> Unit) {
+        mediaPlayer.setOnCompletionListener {
+            block()
+        }
+    }
+
+    fun pause() = runCatching { mediaPlayer.pause() }.onFailure { it.printStackTrace() }
+
+    fun release() {
+        mediaPlayer.release()
+    }
 
 }

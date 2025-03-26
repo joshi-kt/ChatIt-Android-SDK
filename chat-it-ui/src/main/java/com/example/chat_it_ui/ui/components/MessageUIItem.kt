@@ -51,6 +51,7 @@ import com.example.chat_it.init.LocalConfig
 import com.example.chat_it.model.MessageStatus
 import com.example.chat_it.util.DEFAULT_IMAGE
 import com.example.chat_it_ui.R
+import com.example.chat_it_ui.media.MediaHandler
 import com.example.chat_it_ui.ui.models.MessageUIModel
 import com.example.chat_it_ui.ui.screens.ConversationScreenAction
 import com.example.chat_it_ui.ui.screens.ConversationUIState
@@ -80,12 +81,6 @@ fun MessageUIItem(
     ) {
 
         if(!message.isUserMessage()) {
-
-            ProfilePic(
-                localConfig.botImage,
-                LocalContext.current.getString(R.string.bot_image),
-                sizeInDp = 32.dp
-            )
 
             Spacer(
                 modifier = Modifier.width(5.dp)
@@ -223,12 +218,6 @@ fun MessageUIItem(
 
             Spacer(
                 modifier = Modifier.width(5.dp)
-            )
-
-            ProfilePic(
-                localConfig.userImage,
-                LocalContext.current.getString(R.string.user_image),
-                sizeInDp = 32.dp
             )
 
         }
