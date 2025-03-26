@@ -109,11 +109,6 @@ object ChatItHelper {
     }
 
     @JvmStatic
-    internal fun clearOlderFiles(context: Context, onCleared : () -> Unit = {}) {
-        AudioMessageHelper.clearOlderFiles(context, onCompleted = onCleared)
-    }
-
-    @JvmStatic
     fun stopChatIt() {
         runningJobs.forEach {
             it.cancel()

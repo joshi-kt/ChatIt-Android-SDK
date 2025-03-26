@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.chat_it.helper.ChatItHelper
 import com.example.chat_it.model.Message
+import com.example.chat_it.util.Logger
 import com.example.chat_it_ui.media.MediaHandler
 import com.example.chat_it_ui.ui.models.MessageUIModel
 import com.example.chat_it_ui.ui.screens.ConversationScreenAction
@@ -30,11 +31,15 @@ import kotlin.coroutines.CoroutineContext
 
 internal class ConversationScreenViewModel : ViewModel() {
 
+    private val TAG = "ConversationScreenViewModel"
+
     private val mutex = Mutex()
     private val _chatMessages = ChatItHelper.getAllMessagesAsFlow()
 
     private val _uiState = MutableStateFlow(ConversationUIState())
     val uiState = _uiState.asStateFlow()
+
+    private val mediaHandler = MediaHandler()
 
     init {
         observeMessages()
@@ -42,7 +47,7 @@ internal class ConversationScreenViewModel : ViewModel() {
     }
 
     private fun observeAudioFinishing() {
-        MediaHandler.setOnCompletionListener {
+        mediaHandler.onAudioComplete {
             updateCurrentPlayingUIState()
         }
     }
@@ -52,8 +57,9 @@ internal class ConversationScreenViewModel : ViewModel() {
             onBackgroundThread = false,
             action = {
                 ConnectivityObserver.observeConnectivity(context).collectLatest {
-                    if (it != _uiState.value.internetConnectivity)
+                    if (it != _uiState.value.internetConnectivity) {
                         updateConnectivityState(it)
+                    }
                 }
             }
         )
@@ -77,11 +83,11 @@ internal class ConversationScreenViewModel : ViewModel() {
             }
 
             is ConversationScreenAction.OnPlayPauseButtonClicked -> {
-                if (MediaHandler.isPlaying) {
-                    MediaHandler.pause()
+                if (mediaHandler.isPlaying()) {
+                    mediaHandler.pause()
                     updateCurrentPlayingUIState()
                 } else {
-                    MediaHandler.play(
+                    mediaHandler.play(
                         messageUIModel = action.messageUIModel,
                         onStarted = {
                             updateCurrentPlayingUIState(messageId = action.messageUIModel.messageId)
@@ -126,7 +132,7 @@ internal class ConversationScreenViewModel : ViewModel() {
         executeAsync(
             action = {
                 _chatMessages.collectLatest { messages ->
-                    Log.d("ChatItLoggerMessages", messages.toString())
+                    Logger.log(TAG, Logger.LogType.DEBUG, messages.toString())
                     _uiState.update {
                         it.copy (
                             messages = messages.map { message -> message.toMessageUIModel() }
@@ -175,8 +181,8 @@ internal class ConversationScreenViewModel : ViewModel() {
     }
 
     override fun onCleared() {
-        MediaHandler.release()
         super.onCleared()
+        mediaHandler.release()
     }
 
 }

@@ -4,7 +4,7 @@ import android.os.Build
 import android.util.Log
 import com.example.chat_it.init.InstanceHandler
 
-internal object Logger {
+object Logger {
 
     private const val LOGGER_TAG = "ChatItLogger"
 

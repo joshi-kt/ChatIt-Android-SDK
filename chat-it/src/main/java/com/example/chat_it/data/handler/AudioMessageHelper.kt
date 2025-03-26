@@ -26,7 +26,7 @@ internal object AudioMessageHelper {
         message: Message
     ) : String {
         val contentResolver = context.contentResolver
-        val audioFolder = File(context.filesDir, AUDIO_FOLDER_NAME).apply {
+        val audioFolder = File(context.cacheDir, AUDIO_FOLDER_NAME).apply {
             if (!exists()) mkdirs()
         }
 
@@ -94,7 +94,7 @@ internal object AudioMessageHelper {
             taskName = CLOSE_CHAT_IT_TASK,
             isSynchronized = true,
             action = {
-                val audioFolder = File(context.filesDir, AUDIO_FOLDER_NAME)
+                val audioFolder = File(context.cacheDir, AUDIO_FOLDER_NAME)
                 if (audioFolder.exists()) {
                     Logger.log(TAG, Logger.LogType.DEBUG, "Audio messages folder cleared. : ${audioFolder.deleteRecursively()}")
                 }

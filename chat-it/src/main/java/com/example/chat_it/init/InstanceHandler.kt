@@ -1,6 +1,7 @@
 package com.example.chat_it.init
 
 import android.content.Context
+import com.example.chat_it.data.handler.AudioMessageHelper
 import com.example.chat_it.helper.ChatItHelper
 import com.example.chat_it.util.Logger
 import com.example.chat_it.util.SDKUninitializedException
@@ -20,25 +21,18 @@ object InstanceHandler {
             }
         }
 
-    fun createInstance(
+    internal fun createInstance(
         context: Context,
         appKey: String,
         localConfig: LocalConfig,
         logConfig: LogConfig
     ) {
-        synchronized(this) {
-            if (_instance == null) {
-                Utils.setBuildType(context)
-                ChatItHelper.clearOlderFiles(
-                    context,
-                    onCleared = {
-                        _instance = ChatItInstance(appKey, localConfig, logConfig)
-                        Logger.log(TAG,Logger.LogType.DEBUG,"Instance initialized : $_instance")
-                    }
-                )
-            } else {
-                Logger.log(TAG,Logger.LogType.DEBUG,"Instance already initialized")
-            }
+        if (_instance == null) {
+            Utils.setBuildType(context)
+            _instance = ChatItInstance(appKey, localConfig, logConfig)
+            Logger.log(TAG,Logger.LogType.DEBUG,"Instance initialized : $_instance")
+        } else {
+            Logger.log(TAG,Logger.LogType.DEBUG,"Instance already initialized")
         }
     }
 

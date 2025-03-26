@@ -11,7 +11,6 @@ import kotlinx.serialization.Serializable
 data class LocalConfig(
     val queryPrompt : String = DEFAULT_PROMPT,
     @DrawableRes val botImage : Int = DEFAULT_IMAGE,
-    @DrawableRes val userImage : Int = DEFAULT_IMAGE,
     val botName : String = DEFAULT_BOT_NAME,
     val botAudioQueryPrompt : String = DEFAULT_AUDIO_MESSAGE_OUTPUT_INSTRUCTION,
 )
