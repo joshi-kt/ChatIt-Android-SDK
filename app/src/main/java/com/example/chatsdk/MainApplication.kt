@@ -20,9 +20,8 @@ class MainApplication : Application() {
         ChatIt(
             context = this,
             appKey = "",
-            localConfig = LocalConfig(
-                botImage = R.drawable.img,
-            )
+            localConfig = LocalConfig(),
+            logConfig = LogConfig()
         ).initialize()
     }
 }
