@@ -10,6 +10,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
@@ -40,6 +41,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -119,11 +121,6 @@ fun MessageUIItem(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable {
-                        if (message.isAudioMessage()) {
-                            onPlayPauseButtonClicked(message)
-                        }
-                    }
             ) {
 
                 if (message.isAudioMessage()) {
@@ -138,6 +135,11 @@ fun MessageUIItem(
                         contentDescription = stringResource(id = R.string.play),
                         contentScale = ContentScale.FillBounds,
                         modifier = Modifier
+                            .clickable {
+                                if (message.isAudioMessage()) {
+                                    onPlayPauseButtonClicked(message)
+                                }
+                            }
                             .size(32.dp)
                             .padding(1.dp),
                         colorFilter = ColorFilter.tint(
@@ -149,16 +151,40 @@ fun MessageUIItem(
 
 
                 Text(
-                    text = message.message,
+                    text = if (message.isTextMessage()) message.message else message.messageMetadata["file_name"] ?: "",
                     color = if (message.isUserMessage()) Color.White
                     else Utils.getLightOrDarkColor(
                         lightColor = LightBlack,
                         darkColor = DarkWhite
                     ),
+                    overflow = TextOverflow.Ellipsis,
+                    maxLines = if(!message.isTextMessage()) 1 else Int.MAX_VALUE,
                     fontSize = 14.sp,
                     fontFamily = FontFamily.SansSerif,
                     modifier = Modifier.fillMaxWidth()
                 )
+
+            }
+
+            if (!message.isTextMessage()) {
+
+                Box(
+                    modifier = Modifier
+                        .padding(2.dp)
+                ) {
+
+                    Text(
+                        text = message.message,
+                        color = if (message.isUserMessage()) Color.White
+                        else Utils.getLightOrDarkColor(
+                            lightColor = LightBlack,
+                            darkColor = DarkWhite
+                        ),
+                        fontSize = 14.sp,
+                        fontFamily = FontFamily.SansSerif,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
 
             }
 

@@ -2,12 +2,15 @@ package com.example.chat_it_ui.ui.viewmodels
 
 import android.content.Context
 import android.net.Uri
+import android.provider.OpenableColumns
 import android.util.Log
+import androidx.annotation.WorkerThread
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.chat_it.helper.ChatItHelper
 import com.example.chat_it.model.Message
+import com.example.chat_it.model.MessageType
 import com.example.chat_it.util.Logger
 import com.example.chat_it_ui.media.MediaHandler
 import com.example.chat_it_ui.ui.models.MessageUIModel
@@ -28,13 +31,14 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.CoroutineContext
+import androidx.core.net.toUri
 
 internal class ConversationScreenViewModel : ViewModel() {
 
     private val TAG = "ConversationScreenViewModel"
 
     private val mutex = Mutex()
-    private val _chatMessages = ChatItHelper.getAllMessagesAsFlow()
+    private val chatMessages = ChatItHelper.getAllMessagesAsFlow()
 
     private val _uiState = MutableStateFlow(ConversationUIState())
     val uiState = _uiState.asStateFlow()
@@ -75,14 +79,23 @@ internal class ConversationScreenViewModel : ViewModel() {
 
     fun onAction(action: ConversationScreenAction){
         when(action){
-            is ConversationScreenAction.OnAudioButtonClicked -> {
-                sendAudioMessage(action.audioUri, action.context)
-            }
+
             is ConversationScreenAction.OnSendButtonClicked -> {
-                sendMessage(action.messageText)
+
+                when(action.messageType) {
+                    MessageType.TEXT -> {
+                        sendTextMessage(action.messageText)
+                    }
+                    MessageType.AUDIO -> {
+                        sendAudioMessage(_uiState.value.uploadedFileUri, action.messageText, action.context)
+                    }
+                }
+                resetMessageUIState()
+
             }
 
             is ConversationScreenAction.OnPlayPauseButtonClicked -> {
+
                 if (mediaHandler.isPlaying()) {
                     mediaHandler.pause()
                     updateCurrentPlayingUIState()
@@ -94,7 +107,67 @@ internal class ConversationScreenViewModel : ViewModel() {
                         }
                     )
                 }
+
             }
+
+            ConversationScreenAction.onAttachmentRemoved -> {
+
+                resetMessageUIState()
+
+            }
+
+            is ConversationScreenAction.uploadAttachment -> {
+                updateUploadingUIState(true)
+                uploadAttachment(action)
+            }
+
+        }
+    }
+
+    private fun resetMessageUIState() {
+        _uiState.update {
+            it.copy(
+                uploadedFileName = "",
+                uploadedFileUri = "",
+                messageType = MessageType.TEXT
+            )
+        }
+    }
+
+    private fun updateUploadingUIState(isUploading : Boolean) {
+        _uiState.update {
+            it.copy(
+                isUploading = isUploading,
+            )
+        }
+    }
+
+    private fun uploadAttachment(action: ConversationScreenAction.uploadAttachment) {
+        executeAsync(
+            isSynchronized = true,
+            action = {
+                val fileName = getFileNameFromUri(context = action.context, uri = action.uri)
+                updateCurrentMessageTypeUI(
+                    uploadedFileUri = action.uri.toString(),
+                    uploadedFileName = fileName,
+                    messageType = action.messageType
+                )
+                updateUploadingUIState(false)
+            }
+        )
+    }
+
+    private fun updateCurrentMessageTypeUI(
+        uploadedFileUri : String,
+        uploadedFileName : String,
+        messageType: MessageType
+    ) {
+        _uiState.update {
+            it.copy(
+                uploadedFileName = uploadedFileName,
+                uploadedFileUri = uploadedFileUri,
+                messageType = messageType
+            )
         }
     }
 
@@ -106,7 +179,7 @@ internal class ConversationScreenViewModel : ViewModel() {
         }
     }
 
-    private fun sendMessage(messageText : String){
+    private fun sendTextMessage(messageText : String){
         executeAsync (
             action = {
                 ChatItHelper.sendMessage(messageText)
@@ -115,14 +188,17 @@ internal class ConversationScreenViewModel : ViewModel() {
     }
 
     private fun sendAudioMessage(
-        audioUri: Uri,
+        audioUriString: String,
+        messageText: String,
         context: Context
     ){
         executeAsync (
             action = {
+                val audioUri = audioUriString.toUri()
                 ChatItHelper.sendAudioMessage(
                     audioUri = audioUri,
-                    context = context
+                    context = context,
+                    messageText = messageText
                 )
             }
         )
@@ -131,7 +207,7 @@ internal class ConversationScreenViewModel : ViewModel() {
     private fun observeMessages() {
         executeAsync(
             action = {
-                _chatMessages.collectLatest { messages ->
+                chatMessages.collectLatest { messages ->
                     Logger.log(TAG, Logger.LogType.DEBUG, messages.toString())
                     _uiState.update {
                         it.copy (
@@ -183,6 +259,19 @@ internal class ConversationScreenViewModel : ViewModel() {
     override fun onCleared() {
         super.onCleared()
         mediaHandler.release()
+    }
+
+    @WorkerThread
+    fun getFileNameFromUri(context: Context, uri: Uri): String {
+        var fileName = ""
+        context.contentResolver.query(uri, null, null, null, null)?.use {
+            val nameIndex = it.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+            if (it.moveToFirst()) {
+                fileName = it.getString(nameIndex)
+            }
+        }
+
+        return fileName.ifBlank { uri.lastPathSegment.toString() }
     }
 
 }

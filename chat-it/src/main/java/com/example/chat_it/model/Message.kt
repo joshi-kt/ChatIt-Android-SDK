@@ -46,7 +46,5 @@ enum class MessageSender(val value: Int) {
 
 enum class MessageType(val value: Int) {
     TEXT(0),
-    DATE(1),
     AUDIO(2)
-
 }

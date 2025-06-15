@@ -45,7 +45,15 @@ internal object AudioMessageHelper {
 
     }
 
-    fun addAudioMetadata(uploadedUri: String? = null, message: Message, context: Context, audioUri: Uri? = null, filePath : String? = null) : Message {
+    fun addAudioMetadata(
+        uploadedUri: String? = null,
+        message: Message,
+        context: Context,
+        audioUri: Uri? = null,
+        filePath : String? = null,
+        fileName : String? = null
+    ) : Message
+    {
         val metadata = message.messageMetadata.toMutableMap()
         uploadedUri?.let {
             metadata["file_uri"] = it
@@ -55,6 +63,9 @@ internal object AudioMessageHelper {
         }
         filePath?.let {
             metadata["local_file_path"] = it
+        }
+        fileName?.let {
+            metadata["file_name"] = it
         }
         return message.copy(
             messageMetadata = metadata.toMap()

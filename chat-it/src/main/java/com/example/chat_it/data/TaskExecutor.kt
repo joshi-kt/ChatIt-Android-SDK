@@ -35,9 +35,7 @@ object TaskExecutor {
             if (throwable is CancellationException) throw throwable
         }
 
-        coroutineContext +=
-            if (onBackgroundThread && Looper.myLooper()?.equals(Looper.getMainLooper()) == true) Dispatchers.IO
-            else Dispatchers.Main
+        coroutineContext += if (onBackgroundThread) Dispatchers.IO else Dispatchers.Main
 
         withContext(coroutineContext) {
             if (isSynchronized) {
@@ -69,9 +67,7 @@ object TaskExecutor {
             if (throwable is CancellationException) throw throwable
         }
 
-        coroutineContext +=
-            if (onBackgroundThread && Looper.myLooper()?.equals(Looper.getMainLooper()) == true) Dispatchers.IO
-            else Dispatchers.Main
+        coroutineContext += if (onBackgroundThread) Dispatchers.IO else Dispatchers.Main
 
         val job = coroutineScope.launch(coroutineContext) {
             if (isSynchronized) {

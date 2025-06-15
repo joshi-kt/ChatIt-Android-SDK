@@ -15,8 +15,7 @@ fun JsonObjectBuilder.addMessageTextValue(message: Message) : JsonElement? {
     return put(
         TEXT,
         JsonPrimitive(
-            if (message.isAudioMessage()) InstanceHandler.instance.localConfig.botAudioQueryPrompt
-            else message.message
+            message.message
         )
     )
 }

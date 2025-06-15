@@ -18,6 +18,7 @@ import com.example.chat_it.util.SEND_TEXT_MESSAGE_TASK
 import com.example.chat_it.util.toRequestBody
 import kotlinx.io.IOException
 import kotlinx.io.files.FileNotFoundException
+import kotlin.jvm.Throws
 
 internal class UserChatHandler {
 
@@ -56,6 +57,7 @@ internal class UserChatHandler {
     suspend fun sendAudioMessage(
         audioUri : Uri,
         context : Context,
+        messageText: String
     ) {
 
         lateinit var message : Message
@@ -64,15 +66,20 @@ internal class UserChatHandler {
             taskName = CREATE_AUDIO_MESSAGE_TASK,
             action = {
                 check(AudioMessageHelper.isValidAudio(context, audioUri)) { "Unsupported audio file" }
-                val fileName = AudioMessageHelper.getAudioFileNameFromUri(context, audioUri)
                 message = Message(
-                    message = fileName,
+                    message = messageText,
                     messageSender = MessageSender.USER,
                     messageStatus = MessageStatus.QUEUED,
                     messageType = MessageType.AUDIO
                 )
                 val localPath = AudioMessageHelper.saveAudioToDevice(audioUri,context,message)
-                message = AudioMessageHelper.addAudioMetadata(message = message, filePath = localPath, context = context)
+                val fileName = AudioMessageHelper.getAudioFileNameFromUri(context, audioUri)
+                message = AudioMessageHelper.addAudioMetadata(
+                    message = message,
+                    filePath = localPath,
+                    context = context,
+                    fileName = fileName
+                )
                 Logger.log(TAG, Logger.LogType.DEBUG, "sending message $message")
                 ConversationCache.addNewMessage(message)
             },

@@ -1,5 +1,12 @@
 package com.example.chat_it_ui.utils
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.indication
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
 import com.example.chat_it.model.Message
 import com.example.chat_it.model.MessageSender
 import com.example.chat_it.model.MessageStatus
@@ -33,4 +40,13 @@ fun String.toMessageUIModel(
 )
 
 fun Long.toDisplayableDate() = DisplayableDate(this)
+
+@Composable
+fun Modifier.nonClickable() = composed {
+    this.clickable(
+        onClick = {},
+        interactionSource = remember { MutableInteractionSource() },
+        indication = null
+    )
+}
 

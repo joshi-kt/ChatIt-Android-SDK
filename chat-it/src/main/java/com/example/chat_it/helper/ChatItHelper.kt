@@ -30,6 +30,7 @@ object ChatItHelper {
         userChatHandler.sendMessage(message)
     }
 
+    @JvmOverloads
     @JvmStatic
     fun sendMessageAsync(
         message: String,
@@ -48,6 +49,7 @@ object ChatItHelper {
     @JvmOverloads
     @JvmStatic
     fun sendAudioMessageAsync(
+        messageText: String,
         audioUri : Uri,
         context : Context,
         coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.IO)
@@ -55,7 +57,9 @@ object ChatItHelper {
         InstanceHandler.ensureInitialized()
         val job = coroutineScope.launch {
             userChatHandler.sendAudioMessage(
-                audioUri, context.applicationContext
+                audioUri,
+                context.applicationContext,
+                messageText
             )
         }
         runningJobs.add(job)
@@ -78,10 +82,13 @@ object ChatItHelper {
     suspend fun sendAudioMessage(
         audioUri : Uri,
         context : Context,
+        messageText : String,
     ){
         InstanceHandler.ensureInitialized()
         userChatHandler.sendAudioMessage(
-            audioUri, context.applicationContext
+            audioUri,
+            context.applicationContext,
+            messageText
         )
     }
 

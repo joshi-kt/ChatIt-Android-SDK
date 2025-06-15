@@ -10,6 +10,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.example.chat_it.init.ChatIt
 import com.example.chat_it.init.LocalConfig
+import com.example.chat_it.init.LogConfig
 import kotlinx.coroutines.launch
 
 class MainApplication : Application() {
