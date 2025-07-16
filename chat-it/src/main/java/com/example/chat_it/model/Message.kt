@@ -1,5 +1,6 @@
 package com.example.chat_it.model
 
+import com.example.chat_it.util.LOCAL_FILE_PATH
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import java.util.UUID
@@ -21,7 +22,7 @@ data class Message(
 
     fun isAudioMessage() = this.messageType == MessageType.AUDIO
 
-    fun getAudioLocalPath() = this.messageMetadata["local_file_path"]
+    fun getAudioLocalPath() = this.messageMetadata[LOCAL_FILE_PATH]
 
 }
 
@@ -46,5 +47,6 @@ enum class MessageSender(val value: Int) {
 
 enum class MessageType(val value: Int) {
     TEXT(0),
-    AUDIO(2)
+    IMAGE(1),
+    AUDIO(2),
 }

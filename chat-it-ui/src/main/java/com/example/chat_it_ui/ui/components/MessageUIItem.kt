@@ -63,11 +63,8 @@ import com.example.chat_it_ui.ui.theme.primary
 import com.example.chat_it_ui.utils.Utils
 
 @Composable
-fun MessageUIItem(
+fun TextMessageUIItem(
     message: MessageUIModel,
-    localConfig: LocalConfig,
-    uiState: ConversationUIState,
-    onPlayPauseButtonClicked: (MessageUIModel) -> Unit
 ) {
 
     Row(
@@ -123,68 +120,18 @@ fun MessageUIItem(
                     .fillMaxWidth()
             ) {
 
-                if (message.isAudioMessage()) {
-
-                    Image(
-                        painter = painterResource(
-                            if (uiState.currentPlaying == message.messageId)
-                                R.drawable.pause
-                            else
-                                R.drawable.play
-                        ),
-                        contentDescription = stringResource(id = R.string.play),
-                        contentScale = ContentScale.FillBounds,
-                        modifier = Modifier
-                            .clickable {
-                                if (message.isAudioMessage()) {
-                                    onPlayPauseButtonClicked(message)
-                                }
-                            }
-                            .size(32.dp)
-                            .padding(1.dp),
-                        colorFilter = ColorFilter.tint(
-                            color = Color.White
-                        )
-                    )
-
-                }
-
-
                 Text(
-                    text = if (message.isTextMessage()) message.message else message.messageMetadata["file_name"] ?: "",
+                    text = message.message,
                     color = if (message.isUserMessage()) Color.White
                     else Utils.getLightOrDarkColor(
                         lightColor = LightBlack,
                         darkColor = DarkWhite
                     ),
                     overflow = TextOverflow.Ellipsis,
-                    maxLines = if(!message.isTextMessage()) 1 else Int.MAX_VALUE,
                     fontSize = 14.sp,
                     fontFamily = FontFamily.SansSerif,
                     modifier = Modifier.fillMaxWidth()
                 )
-
-            }
-
-            if (!message.isTextMessage()) {
-
-                Box(
-                    modifier = Modifier
-                        .padding(2.dp)
-                ) {
-
-                    Text(
-                        text = message.message,
-                        color = if (message.isUserMessage()) Color.White
-                        else Utils.getLightOrDarkColor(
-                            lightColor = LightBlack,
-                            darkColor = DarkWhite
-                        ),
-                        fontSize = 14.sp,
-                        fontFamily = FontFamily.SansSerif,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
 
             }
 
@@ -255,15 +202,12 @@ fun MessageUIItem(
 
 @Preview
 @Composable
-private fun MessageUIItemPreview() {
+private fun TextMessageUIItemPreview() {
     ChatIt(
         context = LocalContext.current,
         appKey = "",
     ).initialize()
-    MessageUIItem(
+    TextMessageUIItem(
         message = Utils.dummyData()[1],
-        localConfig = InstanceHandler.instance.localConfig,
-        uiState = ConversationUIState(),
-        onPlayPauseButtonClicked = {}
     )
 }

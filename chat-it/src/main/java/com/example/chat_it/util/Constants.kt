@@ -10,7 +10,8 @@ const val BASE_URL = "https://generativelanguage.googleapis.com"
 const val UPLOAD = "/upload"
 const val API_VERSION = "/v1beta"
 const val GEMINI_MODEL = "/models/gemini-1.5-flash"
-const val MAX_FILE_SIZE = 20_971_520
+const val MAX_AUDIO_SIZE = 20_971_520
+const val MAX_IMAGE_SIZE = 20_971_520
 
 const val SEND_MESSAGE_ENDPOINT = ":generateContent"
 const val CREATE_FILE_ENDPOINT = "/files"
@@ -25,7 +26,17 @@ const val CONTENTS = "contents"
 const val FILE_DATA = "file_data"
 const val SYSTEM_INSTRUCTION = "system_instruction"
 const val DEFAULT_AUDIO_MESSAGE_OUTPUT_INSTRUCTION = "Summarize the key points from the audio succinctly."
-const val SEND_TEXT_MESSAGE_TASK = "SEND_MESSAGE_TASK"
-const val CREATE_AUDIO_MESSAGE_TASK = "SEND_MESSAGE_TASK"
-const val SEND_AUDIO_MESSAGE_TASK = "SEND_MESSAGE_TASK"
+const val SEND_TEXT_MESSAGE_TASK = "SEND_TEXT_MESSAGE_TASK"
+const val CREATE_AUDIO_MESSAGE_TASK = "CREATE_AUDIO_MESSAGE_TASK"
+const val CREATE_IMAGE_MESSAGE_TASK = "CREATE_IMAGE_MESSAGE_TASK"
+const val SEND_AUDIO_MESSAGE_TASK = "SEND_AUDIO_MESSAGE_TASK"
+const val SEND_IMAGE_MESSAGE_TASK = "SEND_IMAGE_MESSAGE_TASK"
 const val CLOSE_CHAT_IT_TASK = "CLOSE_CHATIT_TASK"
+
+const val FILE_URI = "file_uri"
+const val MIME_TYPE = "mime_type"
+const val LOCAL_FILE_PATH = "local_file_path"
+const val FILE_NAME = "file_name"
+
+const val AUDIO = "audio"
+const val IMAGE = "image"

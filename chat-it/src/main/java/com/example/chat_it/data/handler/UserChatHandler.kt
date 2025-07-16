@@ -10,12 +10,17 @@ import com.example.chat_it.model.Message
 import com.example.chat_it.model.MessageSender
 import com.example.chat_it.model.MessageStatus
 import com.example.chat_it.model.MessageType
+import com.example.chat_it.util.AUDIO
 import com.example.chat_it.util.CLOSE_CHAT_IT_TASK
 import com.example.chat_it.util.CREATE_AUDIO_MESSAGE_TASK
+import com.example.chat_it.util.CREATE_IMAGE_MESSAGE_TASK
+import com.example.chat_it.util.IMAGE
 import com.example.chat_it.util.Logger
 import com.example.chat_it.util.SEND_AUDIO_MESSAGE_TASK
+import com.example.chat_it.util.SEND_IMAGE_MESSAGE_TASK
 import com.example.chat_it.util.SEND_TEXT_MESSAGE_TASK
 import com.example.chat_it.util.toRequestBody
+import kotlinx.coroutines.coroutineScope
 import kotlinx.io.IOException
 import kotlinx.io.files.FileNotFoundException
 import kotlin.jvm.Throws
@@ -73,17 +78,21 @@ internal class UserChatHandler {
                     messageType = MessageType.AUDIO
                 )
                 val localPath = AudioMessageHelper.saveAudioToDevice(audioUri,context,message)
-                val fileName = AudioMessageHelper.getAudioFileNameFromUri(context, audioUri)
+                val fileName = AttachmentHelper.getFileNameFromUri(context, audioUri)
                 message = AudioMessageHelper.addAudioMetadata(
                     message = message,
                     filePath = localPath,
                     context = context,
                     fileName = fileName
                 )
-                Logger.log(TAG, Logger.LogType.DEBUG, "sending message $message")
+                Logger.log(TAG, Logger.LogType.DEBUG, "sending audio message $message")
                 ConversationCache.addNewMessage(message)
             },
             onError = {
+                ConversationCache.updateMessageStatus(
+                    message.messageId,
+                    MessageStatus.FAILED
+                )
                 if (it is IllegalStateException || it is FileNotFoundException || it is IOException) throw it
             }
         )
@@ -94,7 +103,7 @@ internal class UserChatHandler {
             action = {
                 ConversationCache.updateMessageStatus(message.messageId, MessageStatus.SENDING)
                 ConversationCache.updateMessageProcessingTimestamp(message.messageId)
-                val uploadUrl = repository.createFileInServer(audioUri, context, message)
+                val uploadUrl = repository.createFileInServer(audioUri, context, message, AUDIO)
                 val uploadedUri = repository.uploadFileContentToServer(uploadUrl, audioUri, context)
                 message = AudioMessageHelper.addAudioMetadata(
                     uploadedUri = uploadedUri,
@@ -124,6 +133,87 @@ internal class UserChatHandler {
                 ConversationCache.updateMessageStatus(message.messageId, MessageStatus.FAILED)
             }
         )
+    }
+
+    suspend fun sendImageMessage(
+        imageUri : Uri,
+        context : Context,
+        messageText: String
+    ) {
+
+        lateinit var message : Message
+
+        TaskExecutor.execute(
+            taskName = CREATE_IMAGE_MESSAGE_TASK,
+            action = {
+                check(ImageMessageHelper.isValidImage(context, imageUri)) { "Unsupported image file" }
+                message = Message(
+                    message = messageText,
+                    messageSender = MessageSender.USER,
+                    messageStatus = MessageStatus.QUEUED,
+                    messageType = MessageType.IMAGE
+                )
+                val localPath = ImageMessageHelper.saveImageToDevice(imageUri,context,message)
+                val fileName = AttachmentHelper.getFileNameFromUri(context, imageUri)
+                message = ImageMessageHelper.addImageMetadata(
+                    message = message,
+                    filePath = localPath,
+                    context = context,
+                    fileName = fileName
+                )
+                Logger.log(TAG, Logger.LogType.DEBUG, "sending audio message $message")
+                ConversationCache.addNewMessage(message)
+            },
+            onError = {
+                ConversationCache.updateMessageStatus(
+                    message.messageId,
+                    MessageStatus.FAILED
+                )
+                if (it is IllegalStateException || it is FileNotFoundException || it is IOException) throw it
+            }
+        )
+
+        TaskExecutor.execute(
+            taskName = SEND_IMAGE_MESSAGE_TASK,
+            isSynchronized = true,
+            action = {
+                ConversationCache.updateMessageStatus(message.messageId, MessageStatus.SENDING)
+                ConversationCache.updateMessageProcessingTimestamp(message.messageId)
+                val uploadUrl = repository.createFileInServer(imageUri, context, message, IMAGE)
+                val uploadedUri = repository.uploadFileContentToServer(uploadUrl, imageUri, context)
+                message = ImageMessageHelper.addImageMetadata(
+                    uploadedUri = uploadedUri,
+                    message = message,
+                    context = context,
+                    imageUri = imageUri
+                )
+                ConversationCache.updateMessageMetadata(
+                    message.messageId,
+                    message.messageMetadata
+                )
+                val messageList = ConversationCache.getMessagesByProcessingTime()
+                repository
+                    .sendMessage(messageList.toRequestBody())
+                    .onSuccess {
+                        ConversationCache.updateMessageStatus(message.messageId, MessageStatus.SENT)
+                        ConversationCache.addNewMessage(it)
+                    }.onFailure {
+                        ConversationCache.updateMessageStatus(
+                            message.messageId,
+                            MessageStatus.FAILED
+                        )
+                        it.printStackTrace()
+                    }
+            },
+            onError = {
+                ConversationCache.updateMessageStatus(
+                    message.messageId,
+                    MessageStatus.FAILED
+                )
+                ConversationCache.updateMessageStatus(message.messageId, MessageStatus.FAILED)
+            }
+        )
+
     }
 
 }

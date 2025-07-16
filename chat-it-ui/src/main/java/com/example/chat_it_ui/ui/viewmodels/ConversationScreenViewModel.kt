@@ -83,13 +83,21 @@ internal class ConversationScreenViewModel : ViewModel() {
             is ConversationScreenAction.OnSendButtonClicked -> {
 
                 when(action.messageType) {
+
                     MessageType.TEXT -> {
                         sendTextMessage(action.messageText)
                     }
+
                     MessageType.AUDIO -> {
                         sendAudioMessage(_uiState.value.uploadedFileUri, action.messageText, action.context)
                     }
+
+                    MessageType.IMAGE -> {
+                        sendImageMessage(_uiState.value.uploadedFileUri, action.messageText, action.context)
+                    }
+
                 }
+
                 resetMessageUIState()
 
             }
@@ -197,6 +205,23 @@ internal class ConversationScreenViewModel : ViewModel() {
                 val audioUri = audioUriString.toUri()
                 ChatItHelper.sendAudioMessage(
                     audioUri = audioUri,
+                    context = context,
+                    messageText = messageText
+                )
+            }
+        )
+    }
+
+    private fun sendImageMessage(
+        imageUriString: String,
+        messageText: String,
+        context: Context
+    ){
+        executeAsync (
+            action = {
+                val audioUri = imageUriString.toUri()
+                ChatItHelper.sendImageMessage(
+                    imageUri = audioUri,
                     context = context,
                     messageText = messageText
                 )

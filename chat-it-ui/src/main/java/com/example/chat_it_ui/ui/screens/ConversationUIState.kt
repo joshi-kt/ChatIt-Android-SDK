@@ -15,3 +15,15 @@ data class ConversationUIState(
     val uploadedFileUri : String = "",
     val messageType: MessageType = MessageType.TEXT
 )
+
+enum class PermissionType(value : Int) {
+    NONE(0),
+    AUDIO(1),
+    IMAGE(2),
+}
+
+enum class FileManagerType(value: Int) {
+    NONE(0),
+    AUDIO(0),
+    IMAGE(1)
+}

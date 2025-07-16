@@ -57,6 +57,7 @@ fun BottomBar(
     messageType: MessageType,
     onSendButtonClicked: (String) -> Unit,
     onAudioButtonClicked: () -> Unit,
+    onImageButtonClicked : () -> Unit,
     fileName : String,
     onAttachmentRemoved: () -> Unit
 ) {
@@ -244,6 +245,30 @@ fun BottomBar(
                     )
                 }
             )
+
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .padding(
+                        start = 10.dp
+                    ),
+                content = {
+
+                    Image(
+                        painter = painterResource(R.drawable.audio_file),
+                        contentDescription = "Send Audio Message",
+                        colorFilter = ColorFilter.tint(
+                            color = Utils.getBlackOrWhite()
+                        ),
+                        modifier = Modifier
+                            .size(32.dp)
+                            .clickable {
+                                onImageButtonClicked()
+                            }
+                    )
+                }
+            )
         }
 
     }
@@ -255,7 +280,10 @@ fun BottomBar(
 fun BottomBarPreview(modifier: Modifier = Modifier) {
     BottomBar(
         MessageType.AUDIO,
-        {},{},
-        "myaudio",{}
+        {},
+        {},
+        {},
+        "myaudio",
+        {}
     )
 }

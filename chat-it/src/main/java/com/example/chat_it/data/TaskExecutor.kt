@@ -28,24 +28,23 @@ object TaskExecutor {
         onError: (Throwable) -> Unit = { _ -> },
     ) {
 
-        var coroutineContext : CoroutineContext = CoroutineExceptionHandler { _, throwable ->
+        val dispatcher = if (onBackgroundThread) Dispatchers.IO else Dispatchers.Main
+
+        try {
+            withContext(dispatcher) {
+                if (isSynchronized) {
+                    mutex.withLock {
+                        action()
+                    }
+                } else {
+                    action()
+                }
+                Logger.log(TAG, Logger.LogType.DEBUG, "$taskName execution completed")
+            }
+        } catch (throwable : Throwable) {
             Logger.log(TAG, Logger.LogType.ERROR, "Error in $taskName : ${throwable.message}")
             throwable.printStackTrace()
             onError(throwable)
-            if (throwable is CancellationException) throw throwable
-        }
-
-        coroutineContext += if (onBackgroundThread) Dispatchers.IO else Dispatchers.Main
-
-        withContext(coroutineContext) {
-            if (isSynchronized) {
-                mutex.withLock {
-                    action()
-                }
-            } else {
-                action()
-            }
-            Logger.log(TAG, Logger.LogType.DEBUG, "$taskName execution completed")
         }
 
     }

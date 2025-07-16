@@ -66,8 +66,10 @@ import com.example.chat_it_ui.R
 import com.example.chat_it.init.ChatIt
 import com.example.chat_it.init.InstanceHandler
 import com.example.chat_it.model.MessageType
+import com.example.chat_it_ui.ui.components.AudioMessageUIItem
 import com.example.chat_it_ui.ui.components.BottomBar
-import com.example.chat_it_ui.ui.components.MessageUIItem
+import com.example.chat_it_ui.ui.components.ImageMessageUIItem
+import com.example.chat_it_ui.ui.components.TextMessageUIItem
 import com.example.chat_it_ui.ui.components.NoInternetDialog
 import com.example.chat_it_ui.ui.components.ProfilePic
 import com.example.chat_it_ui.ui.models.MessageUIModel
@@ -88,34 +90,57 @@ fun ConversationScreen(
 
     val context = LocalContext.current
 
-    var showPermissionUI by rememberSaveable {
-        mutableStateOf(false)
+    var permissionUIType by rememberSaveable {
+        mutableStateOf(PermissionType.NONE)
     }
 
-    var openFileManager by rememberSaveable {
-        mutableStateOf(false)
+    var fileManagerUIType by rememberSaveable {
+        mutableStateOf(FileManagerType.NONE)
     }
 
-    if (showPermissionUI) {
+    if (permissionUIType != PermissionType.NONE) {
         PermissionUI(
+            permissionType = permissionUIType,
             permissionResult = {
-                if (it) openFileManager = true
-                showPermissionUI = false
+                if (it) {
+                    when(permissionUIType) {
+
+                        PermissionType.AUDIO -> {
+                            fileManagerUIType = FileManagerType.AUDIO
+                        }
+
+                        PermissionType.IMAGE -> {
+                            fileManagerUIType = FileManagerType.IMAGE
+                        }
+
+                        PermissionType.NONE -> {}
+                    }
+                }
+                permissionUIType = PermissionType.NONE
             }
         )
     }
 
-    if (openFileManager) {
-        AudioPickerUI(
-            onAudioPicked = {
+    if (fileManagerUIType != FileManagerType.NONE) {
+        AttachmentPickerUI(
+            mimeType = when(fileManagerUIType) {
+                FileManagerType.AUDIO -> "audio/*"
+                FileManagerType.IMAGE -> "image/*"
+                FileManagerType.NONE -> ""
+            },
+            onAttachmentPicked = {
                 onAction(
                     ConversationScreenAction.uploadAttachment(
                         it,
                         context.applicationContext,
-                        MessageType.AUDIO
+                        when(fileManagerUIType) {
+                            FileManagerType.AUDIO -> MessageType.AUDIO
+                            FileManagerType.IMAGE -> MessageType.IMAGE
+                            FileManagerType.NONE -> MessageType.TEXT
+                        }
                     )
                 )
-                openFileManager = false
+                fileManagerUIType = FileManagerType.NONE
             }
         )
     }
@@ -183,11 +208,14 @@ fun ConversationScreen(
                         ))
                     },
                     onAudioButtonClicked = {
-                        showPermissionUI = true
+                        permissionUIType = PermissionType.AUDIO
                     },
                     fileName = uiState.uploadedFileName,
                     onAttachmentRemoved = {
                         onAction(ConversationScreenAction.onAttachmentRemoved)
+                    },
+                    onImageButtonClicked = {
+                        permissionUIType = PermissionType.IMAGE
                     }
                 )
 
@@ -216,6 +244,7 @@ fun ConversationScreen(
 
 @Composable
 fun PermissionUI(
+    permissionType: PermissionType,
     permissionResult : (Boolean) -> Unit
 ) {
 
@@ -230,14 +259,26 @@ fun PermissionUI(
 
     val hasReadPermission = ContextCompat.checkSelfPermission(
         context,
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) Manifest.permission.READ_MEDIA_AUDIO
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            when(permissionType) {
+                PermissionType.AUDIO -> Manifest.permission.READ_MEDIA_AUDIO
+                PermissionType.IMAGE -> Manifest.permission.READ_MEDIA_IMAGES
+                PermissionType.NONE -> ""
+            }
+        }
         else Manifest.permission.READ_EXTERNAL_STORAGE
     ) == PackageManager.PERMISSION_GRANTED
 
     LaunchedEffect(Unit) {
         if (hasReadPermission) permissionResult(true)
         else storagePermissionResultLauncher.launch(
-            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) Manifest.permission.READ_MEDIA_AUDIO
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                when(permissionType) {
+                    PermissionType.AUDIO -> Manifest.permission.READ_MEDIA_AUDIO
+                    PermissionType.IMAGE -> Manifest.permission.READ_MEDIA_IMAGES
+                    PermissionType.NONE -> ""
+                }
+            }
             else Manifest.permission.READ_EXTERNAL_STORAGE
         )
     }
@@ -245,20 +286,21 @@ fun PermissionUI(
 }
 
 @Composable
-fun AudioPickerUI(
-    onAudioPicked : (Uri) -> Unit
+fun AttachmentPickerUI(
+    mimeType : String,
+    onAttachmentPicked : (Uri) -> Unit
 ) {
 
     val audioPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         uri?.let {
-            onAudioPicked(it)
+            onAttachmentPicked(it)
         }
     }
 
     LaunchedEffect(Unit) {
-        audioPickerLauncher.launch("audio/*")
+        audioPickerLauncher.launch(mimeType)
     }
 
 }
@@ -379,14 +421,34 @@ fun MessagesListUI(
                     modifier = Modifier.height(4.dp)
                 )
 
-                MessageUIItem(
-                    message = messages[it],
-                    localConfig = InstanceHandler.instance.localConfig,
-                    uiState = uiState,
-                    onPlayPauseButtonClicked = {
-                        onPlayPauseButtonClicked(it)
+                when(messages[it].messageType) {
+                    MessageType.TEXT -> {
+
+                        TextMessageUIItem(
+                            message = messages[it],
+                        )
+
                     }
-                )
+                    MessageType.AUDIO -> {
+
+                        AudioMessageUIItem(
+                            message = messages[it],
+                            uiState = uiState,
+                            onPlayPauseButtonClicked = {
+                                onPlayPauseButtonClicked(it)
+                            }
+                        )
+
+                    }
+
+                    MessageType.IMAGE -> {
+
+                        ImageMessageUIItem(
+                            message = messages[it]
+                        )
+
+                    }
+                }
 
                 Spacer(
                     modifier = Modifier.height(6.dp)

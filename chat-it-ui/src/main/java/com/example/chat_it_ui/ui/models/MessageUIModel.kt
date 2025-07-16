@@ -4,6 +4,7 @@ import com.example.chat_it.model.Message
 import com.example.chat_it.model.MessageSender
 import com.example.chat_it.model.MessageStatus
 import com.example.chat_it.model.MessageType
+import com.example.chat_it.util.LOCAL_FILE_PATH
 import kotlinx.serialization.Serializable
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -26,7 +27,7 @@ data class MessageUIModel(
 
     fun isTextMessage() = this.messageType == MessageType.TEXT
 
-    fun getAudioLocalPath() = this.messageMetadata["local_file_path"]
+    fun getAudioLocalPath() = this.messageMetadata[LOCAL_FILE_PATH]
 
 }
 

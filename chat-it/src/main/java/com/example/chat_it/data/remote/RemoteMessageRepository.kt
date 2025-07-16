@@ -17,6 +17,9 @@ import com.example.chat_it.util.API_VERSION
 import com.example.chat_it.util.BASE_URL
 import com.example.chat_it.util.CONTENTS
 import com.example.chat_it.util.CREATE_FILE_ENDPOINT
+import com.example.chat_it.util.FILE_DATA
+import com.example.chat_it.util.FILE_NAME
+import com.example.chat_it.util.FILE_URI
 import com.example.chat_it.util.GEMINI_MODEL
 import com.example.chat_it.util.Logger
 import com.example.chat_it.util.PARTS
@@ -105,15 +108,20 @@ internal class RemoteMessageRepository {
     }
 
     @WorkerThread
-    suspend fun createFileInServer(audioUri: Uri, context: Context, message: Message) : String {
+    suspend fun createFileInServer(
+        fileUri: Uri,
+        context: Context,
+        message: Message,
+        fileMemeType : String
+    ) : String {
 
         val apiKey = InstanceHandler.instance.appKey
 
-        val mimeType = context.contentResolver.getType(audioUri)
+        val mimeType = context.contentResolver.getType(fileUri)
         checkNotNull(mimeType) { "Unsupported media type" }
-        check(mimeType.startsWith("audio/")) { "Unsupported Media Type" }
+        check(mimeType.startsWith(fileMemeType)) { "Unsupported Media Type" }
 
-        val numBytes = context.contentResolver.openInputStream(audioUri)?.use {
+        val numBytes = context.contentResolver.openInputStream(fileUri)?.use {
             it.available()
         }
         checkNotNull(numBytes){"Corrupted file"}
@@ -164,13 +172,13 @@ internal class RemoteMessageRepository {
     @WorkerThread
     suspend fun uploadFileContentToServer(
         uploadUrl : String,
-        audioUri: Uri,
+        fileUri: Uri,
         context: Context,
     ) : String {
 
-        val mimeType = context.contentResolver.getType(audioUri).toString()
+        val mimeType = context.contentResolver.getType(fileUri).toString()
 
-        val fileBytes = context.contentResolver.openInputStream(audioUri)?.use {
+        val fileBytes = context.contentResolver.openInputStream(fileUri)?.use {
             it.readBytes()
         }
         checkNotNull(fileBytes) {"Corrupted file"}
@@ -298,14 +306,14 @@ internal class RemoteMessageRepository {
                     buildJsonObject {
                         putJsonArray("contents") {
                             addJsonObject {
-                                putJsonArray("parts") {
+                                putJsonArray(PARTS) {
                                     addJsonObject {
-                                        put("text", JsonPrimitive("Describe this audio clip"))
+                                        put(TEXT, JsonPrimitive("Describe this audio clip"))
                                     }
                                     addJsonObject {
-                                        put("file_data", buildJsonObject {
-                                            put("mime_type", JsonPrimitive(mimeType))
-                                            put("file_uri", JsonPrimitive(file_uri))
+                                        put(FILE_DATA, buildJsonObject {
+                                            put(FILE_NAME, JsonPrimitive(mimeType))
+                                            put(FILE_URI, JsonPrimitive(file_uri))
                                         })
                                     }
                                 }

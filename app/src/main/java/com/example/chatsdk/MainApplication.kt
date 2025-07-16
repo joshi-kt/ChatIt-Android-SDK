@@ -19,7 +19,7 @@ class MainApplication : Application() {
         super.onCreate()
         ChatIt(
             context = this,
-            appKey = "",
+            appKey = "AIzaSyAeT3bUspMXf44tmjXqOeaNMAEZjv18dM8",
             localConfig = LocalConfig(),
             logConfig = LogConfig()
         ).initialize()

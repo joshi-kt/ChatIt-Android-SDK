@@ -20,12 +20,12 @@ fun JsonObjectBuilder.addMessageTextValue(message: Message) : JsonElement? {
     )
 }
 
-fun JsonObjectBuilder.addAudioMessageMetadata(message: Message) : JsonElement? {
+fun JsonObjectBuilder.addAttachmentMessageMetadata(message: Message) : JsonElement? {
     return put(
         FILE_DATA,
         buildJsonObject {
-            put("file_uri", JsonPrimitive(message.messageMetadata["file_uri"]))
-            put("mime_type", JsonPrimitive(message.messageMetadata["mime_type"]))
+            put(FILE_URI, JsonPrimitive(message.messageMetadata[FILE_URI]))
+            put(MIME_TYPE, JsonPrimitive(message.messageMetadata[MIME_TYPE]))
         }
     )
 }
@@ -70,9 +70,9 @@ fun JsonObjectBuilder.addMessageParts(message: Message) : JsonElement? {
             addJsonObject {
                 addMessageTextValue(message)
             }
-            if (message.isAudioMessage()) {
+            if (!message.isTextMessage()) {
                 addJsonObject {
-                    addAudioMessageMetadata(message)
+                    addAttachmentMessageMetadata(message)
                 }
             }
         }

@@ -6,6 +6,7 @@ import com.example.chat_it.helper.ChatItHelper
 import com.example.chat_it.util.Logger
 import com.example.chat_it.util.SDKUninitializedException
 import com.example.chat_it.util.Utils
+import kotlin.jvm.Throws
 
 object InstanceHandler {
 
@@ -36,6 +37,7 @@ object InstanceHandler {
         }
     }
 
+    @Throws(SDKUninitializedException::class)
     fun ensureInitialized() {
         if (_instance == null) {
             throw SDKUninitializedException("ChatItInstance has not been created. Call createInstance first.")
